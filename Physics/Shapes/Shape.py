@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import overload, NamedTuple
-from numpy import ndarray
+from numpy import ndarray, array
 from abc import ABC, abstractmethod
 from Quaternion import Quaternion
 
@@ -48,35 +48,3 @@ class Shape(ABC):
     self.linv = velocity
     self.att = attitude
     self.angv = angular_velocity
-  
-class Cylinder(Shape):
-  def __init__(
-    self,
-    radius: float,
-    height: float,
-    mass: float,
-    m_dot: float,
-    start_time: float,
-    stop_time: float,
-    position: ndarray,
-    velocity: ndarray,
-    attitude: Quaternion,
-    angular_velocity: ndarray
-  ):
-    super().__init__(
-      mass,
-      m_dot,
-      start_time,
-      stop_time,
-      position,
-      velocity,
-      attitude,
-      angular_velocity
-    )
-    
-    self.dims = CylinderDims(radius=radius, height=height)
-
-
-class CylinderDims(NamedTuple):
-  radius: float
-  height: float

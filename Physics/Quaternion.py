@@ -80,6 +80,9 @@ class Quaternion:
     ], dtype=float)
     return _identity + 2 * self.w * _skew_symmetric + 2 * _skew_symmetric @ _skew_symmetric
   
+  def copy(self) -> Quaternion:
+    return Quaternion(self[W], self[I], self[J], self[K])
+  
   def __str__(self):
     return f"q = ({self.w:.4f} {self.x:.4f}i {self.y:.4f}j {self.z:.4f}k)"
   

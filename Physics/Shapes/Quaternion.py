@@ -86,6 +86,12 @@ class Quaternion:
   def __str__(self):
     return f"q = ({self.w:.4f} {self.x:.4f}i {self.y:.4f}j {self.z:.4f}k)"
   
+  @overload
+  def __mul__(self, other: float | int) -> Quaternion: ...
+  
+  @overload
+  def __mul__(self, other: Quaternion) -> Quaternion: ...
+  
   def __mul__(self, other: float | int | Quaternion):
     if isinstance(other, (float, int)):
       return Quaternion(self.w * other, self.x * other, self.y * other, self.z * other)

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Tuple
 from numpy import ndarray
 
-from Quaternion import *
+from Shapes.Quaternion import *
 
 def dq(omega: ndarray, alpha: ndarray, dt: float) -> Tuple[Quaternion, ndarray]:
   """ attitude differentials

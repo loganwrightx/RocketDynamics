@@ -34,6 +34,9 @@ class Cylinder(Shape):
       [0, IYY, 0],
       [0, 0, IZZ]
     ], dtype=float)
+  
+  def __str__(self) -> str:
+    return f"Cylinder"
 
 
 class CylinderDims(NamedTuple):

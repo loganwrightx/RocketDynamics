@@ -1,6 +1,8 @@
-from numpy import array, ndarray, pi, arange
+from numpy import array, ndarray, pi, std, mean
 import matplotlib.pyplot as plt
 from pandas import read_csv
+from numpy.random import normal as random_normal
+from typing import Tuple
 
 METERS_TO_FEET = 3.28084
 
@@ -24,13 +26,13 @@ dm = 0.036 / 3.1
 Cd = 0.5
 A = 0.0037 ** 2 * pi
 
-print()
-print(f"Initial mass (kg): {m:.3f}")
+δT = 0.05
 
 def T(t) -> float:
   for i in range(len(times) - 1):
     if t >= times[i] and t < times[i + 1]:
-      return slopes[i] * (t - times[i]) + intercepts[i]
+      # incorporate monte carlo 1% thrust deviation from uncertainty in motor thrust performance
+      return (slopes[i] * (t - times[i]) + intercepts[i]) * (1 + δT * random_normal())
   
   return 0.0
 
@@ -53,29 +55,52 @@ t_list = []
 y_list = []
 v_list = []
 
-t = 0.0
-tf = 1.0
-dt = 1e-3
-r = array([0.0, 0.0], float)
+def simulation_loop() -> Tuple[float, float]:
+  """ calculates equations of motion solution for a rocket with changing mass
 
-while (t < tf or r[0] > 0.0):
-  t_list.append(t)
-  y_list.append(r[0])
-  v_list.append(r[1])
+  Returns:
+      Tuple[float, float]: max altitude in feet, time of flight in seconds
+  """
+  global m
+  t = 0.0
+  tf = 1.0
+  dt = 1e-3
+  r = array([0.0, 0.0], float)
+  m = 0.685
+
+  while (t < tf or r[0] > 0.0):
+    t_list.append(t)
+    y_list.append(r[0])
+    v_list.append(r[1])
+
+    dr = RK4(f, r, t, dt)
+    if t < 0.2 and dr[1] < 0.0:
+      dr = array([0.0, 0.0], float)
+
+    r += dr
+    t += dt
+
+  #print(f"Final mass (kg): {m:.3f}")
+  #print(f"Maximum altitude (meters): {max(y_list):.2f}")
+  #print(f"Maximum altitude (ft): {max(y_list) * METERS_TO_FEET:.2f}")
+  #print()
   
-  dr = RK4(f, r, t, dt)
-  if t < 0.2 and dr[1] < 0.0:
-    dr = array([0.0, 0.0], float)
+  return max(y_list) * METERS_TO_FEET, t
+
+#plt.plot(t_list, [_y * METERS_TO_FEET for _y in y_list])
+#plt.ylabel("Altitude (ft)")
+#plt.xlabel("Time (s)")
+#plt.show()
+
+if __name__ == "__main__":
+  runs = 100
+  alts = []
+  ts = []
+  for _ in range(runs):
+    print(f"Finished iteration #{_ + 1}")
+    alt, _t = simulation_loop()
+    alts.append(alt)
+    ts.append(_t)
   
-  r += dr
-  t += dt
-
-print(f"Final mass (kg): {m:.3f}")
-print(f"Maximum altitude (meters): {max(y_list):.2f}")
-print(f"Maximum altitude (ft): {max(y_list) * METERS_TO_FEET:.2f}")
-print()
-
-plt.plot(t_list, [_y * METERS_TO_FEET for _y in y_list])
-plt.ylabel("Altitude (ft)")
-plt.xlabel("Time (s)")
-plt.show()
+  print(f"Maximum altitude (ft): {mean(alts):.3f} +/- {std(alts):.3f}")
+  print(f"Time of flight (s): {mean(ts):.3f} +/- {std(ts):.3f}")

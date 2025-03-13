@@ -5,10 +5,8 @@ from numpy.random import randn as normal_random_variable
 import os
 import json
 
-DATA_FOLDER = "./Data"
+DATA_FOLDER = "./Motors/Data/"
 AVAILABLE = [name[0] for name in [[file.split(".")[0] for file in files if len(files) > 0 and file.endswith("json")] for _, _, files in os.walk(DATA_FOLDER)] if len(name) > 0]
-
-print(AVAILABLE)
 
 def getMotorData(motor: str) -> Tuple[DataFrame, Dict[str, List[int]]]:
   motor_csv = "Estes" + motor + ".csv"

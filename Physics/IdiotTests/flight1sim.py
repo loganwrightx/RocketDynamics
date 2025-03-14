@@ -31,7 +31,7 @@ A = 0.0037 ** 2 * pi
 def T(t) -> float:
   for i in range(len(times) - 1):
     if t >= times[i] and t < times[i + 1]:
-      # incorporate monte carlo 1% thrust deviation from uncertainty in motor thrust performance
+      # incorporate monte carlo δT% thrust deviation from uncertainty in motor thrust performance
       return (slopes[i] * (t - times[i]) + intercepts[i]) * (1 + δT * random_normal())
   
   return 0.0
@@ -51,16 +51,15 @@ def RK4(f, r, t, dt) -> ndarray:
     m -= dm * dt
   return dt * (k1 + 2 * k2 + 2 * k3 + k4) / 6
 
-t_list = []
-y_list = []
-v_list = []
-
-def simulation_loop() -> Tuple[float, float]:
+def simulation_loop(plot: bool = False) -> Tuple[float, float]:
   """ calculates equations of motion solution for a rocket with changing mass
 
   Returns:
       Tuple[float, float]: max altitude in feet, time of flight in seconds
   """
+  t_list = []
+  y_list = []
+  v_list = []
   global m
   t = 0.0
   tf = 1.0
@@ -85,12 +84,13 @@ def simulation_loop() -> Tuple[float, float]:
   #print(f"Maximum altitude (ft): {max(y_list) * METERS_TO_FEET:.2f}")
   #print()
   
+  if plot:
+    plt.plot(t_list, [_y * METERS_TO_FEET for _y in y_list])
+    plt.ylabel("Altitude (ft)")
+    plt.xlabel("Time (s)")
+    plt.show()
+  
   return max(y_list) * METERS_TO_FEET, t
-
-#plt.plot(t_list, [_y * METERS_TO_FEET for _y in y_list])
-#plt.ylabel("Altitude (ft)")
-#plt.xlabel("Time (s)")
-#plt.show()
 
 if __name__ == "__main__":
   runs = 100
@@ -101,6 +101,8 @@ if __name__ == "__main__":
     alt, _t = simulation_loop()
     alts.append(alt)
     ts.append(_t)
+  
+  simulation_loop(True)
   
   print(f"Maximum altitude (ft): {mean(alts):.3f} +/- {std(alts):.3f}")
   print(f"Time of flight (s): {mean(ts):.3f} +/- {std(ts):.3f}")

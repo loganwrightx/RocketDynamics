@@ -1,10 +1,11 @@
-from numpy import array, ndarray, pi, std, mean
+from numpy import array, ndarray, pi, std, mean, sign
 import matplotlib.pyplot as plt
 from pandas import read_csv
 from numpy.random import normal as random_normal
 from typing import Tuple
 
 METERS_TO_FEET = 3.28084
+M_INITIAL = 0.641
 
 data_dir = "./Physics/IdiotTests/EstesE9.csv"
 
@@ -19,12 +20,12 @@ for i in range(len(times) - 1):
   slopes.append((thrusts[i + 1] - thrusts[i]) / (times[i + 1] - times[i]))
   intercepts.append(thrusts[i])
 
-rho = 0.99
+rho = 1.28144
 g = 9.8
-m = 0.685
+m = M_INITIAL
 dm = 0.036 / 3.1
 Cd = 0.5
-A = 0.0037 ** 2 * pi
+A = 0.037 ** 2 * pi
 
 δT = 0.05
 
@@ -38,7 +39,7 @@ def T(t) -> float:
 
 def f(r, t) -> ndarray:
   v = r[1]
-  a = (-m * g - 0.5 * rho * Cd * A * v ** 2 + T(t)) / m
+  a = (-m * g - sign(v) * 0.5 * rho * Cd * A * v ** 2 + T(t)) / m
   return array([v, a], float)
 
 def RK4(f, r, t, dt) -> ndarray:
@@ -65,7 +66,7 @@ def simulation_loop(plot: bool = False) -> Tuple[float, float]:
   tf = 1.0
   dt = 1e-3
   r = array([0.0, 0.0], float)
-  m = 0.685
+  m = M_INITIAL
 
   while (t < tf or r[0] > 0.0):
     t_list.append(t)
@@ -97,7 +98,7 @@ if __name__ == "__main__":
   alts = []
   ts = []
   for _ in range(runs):
-    print(f"Finished iteration #{_ + 1}")
+    #print(f"Finished iteration #{_ + 1}")
     alt, _t = simulation_loop()
     alts.append(alt)
     ts.append(_t)

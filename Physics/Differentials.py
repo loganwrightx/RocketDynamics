@@ -1,34 +1,35 @@
 from __future__ import annotations
 from typing import Tuple
-from numpy import ndarray
+from numpy import ndarray, array
 
 from Shapes.Quaternion import *
+from ThrustVectoring.ThrustVector import ThrustVector
 
-def dq(omega: ndarray, alpha: ndarray, dt: float) -> Tuple[Quaternion, ndarray]:
+def dq(omega: ndarray, dt: float) -> Quaternion:
   """ attitude differentials
 
   Args:
       omega (ndarray): angular velocity
-      alpha (ndarray): angular acceleration
       dt (float): small time step
 
   Returns:
       Tuple[Quaternion, ndarray]: change in attitude, change in angular velocity
   """
-  return qexp(v2q(omega * dt)), alpha * dt
+  return qexp(v2q(omega * dt))
 
-def dr(vel: ndarray, acc: ndarray, dt: float) -> Tuple[ndarray, ndarray]:
+def dr(r: ndarray, dt: float, ) -> ndarray:
   """ linear position differentials
 
   Args:
-      vel (ndarray): linear velocity
-      acc (ndarray): linear acceleration
+      r (ndarray): vector containing position, velocity, angular velocity
       dt (float): small time step
 
   Returns:
       Tuple[ndarray, ndarray]: change in linear position, change in linear velocity
   """
-  return vel * dt, acc * dt
+  acc = array([0.0, 0.0, 0.0])
+  alpha = array([0.0, 0.0, 0.0])
+  return array([r[1], acc, alpha], dtype=float)
 
 __all__ = [
     "dq",

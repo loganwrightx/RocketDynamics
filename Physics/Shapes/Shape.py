@@ -56,10 +56,17 @@ class Shape(ABC):
     self.att = attitude
     self.angv = angular_velocity
   
-  def step(self, t: float = 0.0, dt: float = 0.0) -> None:
-    if t >= self.start_time and t < self.stop_time:
-      self.m -= self.m_dot * dt
-      self.__mass_changed__()
+  def __m__(self, t: float) -> float:
+    if t > self.start_time and t <= self.stop_time:
+      return self.m - self.m_dot * (t - self.start_time)
+    elif t > self.stop_time:
+      return self.m - self.m_dot * (self.stop_time - self.start_time)
+    else:
+      return self.m
+  
+  @abstractmethod
+  def get_i(self, t: float):
+    return self.I
   
   @abstractmethod
   def __str__(self) -> str:
@@ -99,24 +106,21 @@ class Shape(ABC):
     else:
       return NotImplemented("Cannot add Shape to other type than Shape!")
   
-  def __seti__(self, cg: ndarray = array([0.0, 0.0, 0.0])) -> None:
+  def __seti__(self, t: float, cg: ndarray = array([0.0, 0.0, 0.0])) -> None:
     coord = self.pos - cg
-    IXX = self.m * (coord[Y] ** 2 + coord[Z] ** 2)
-    IYY = self.m * (coord[X] ** 2 + coord[Z] ** 2)
-    IZZ = self.m * (coord[X] ** 2 + coord[Y] ** 2)
-    IXY = IYX = self.m * (-coord[X] * coord[Y])
-    IXZ = IZX = self.m * (-coord[Z] * coord[X])
-    IYZ = IZY = self.m * (-coord[Y] * coord[Z])
+    m = self.__m__(t=t)
+    IXX = m * (coord[Y] ** 2 + coord[Z] ** 2)
+    IYY = m * (coord[X] ** 2 + coord[Z] ** 2)
+    IZZ = m * (coord[X] ** 2 + coord[Y] ** 2)
+    IXY = IYX = m * (-coord[X] * coord[Y])
+    IXZ = IZX = m * (-coord[Z] * coord[X])
+    IYZ = IZY = m * (-coord[Y] * coord[Z])
     
-    self.i = self.I + array([
+    self.i = self.get_i(t=t) + array([
       [IXX, IXY, IXZ],
       [IYX, IYY, IYZ],
       [IZX, IZY, IZZ]
     ], dtype=float)
-  
-  @abstractmethod
-  def __mass_changed__(self):
-    pass
 
 def _is3x3(a: ndarray) -> bool:
   if isinstance(a, ndarray):
